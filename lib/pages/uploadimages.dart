@@ -1133,7 +1133,6 @@ class UploadImagesState extends State<UploadImages> {
   bool compressloader = false;
   Future<void> uploadFile(File file, String filename, String filetype) async {
     print("File base name: " + filename);
-
     showfilename = filename;
     try {
       compressloader = true;
@@ -1145,97 +1144,81 @@ class UploadImagesState extends State<UploadImages> {
       final bytes = await compressedFile.readAsBytes();
       String base64String = base64Encode(bytes);
 
+      // Resetting the loader to ensure the function can be called again
+      String loaderVar = "0";
+
       switch (filetype) {
         case "RCFRONT":
           rcfrontimage = base64String;
           rcfrontimageattachmentPath = filename;
-          print(base64String);
-          _rcfrontloader = "2";
+          loaderVar = _rcfrontloader = "2";
           final ext = filename.split('.').last;
           rcfrontfilename = "RCFRONT_" +
               DateTime.now().microsecondsSinceEpoch.toString() +
               '.' +
               ext;
-          imageRCFRONT
-              ? null
-              : _rcfrontloader == "1"
-                  ? null
-                  : Networkcallforuploadimage("RCFRONT", rcfrontimage);
-          //  uploadfile(compressedFile, rcfrontfilename, context);
+          await Networkcallforuploadimage("RCFRONT", rcfrontimage);
+          _rcfrontloader = "0"; // Reset loader
           setState(() {});
           break;
         case "RCBACK":
           rcbackimage = base64String;
           rcbackimageattachmentPath = filename;
-          _rcbackloader = "2";
+          loaderVar = _rcbackloader = "2";
           final ext = filename.split('.').last;
           rcbackfilename = "RCBACK_" +
               DateTime.now().microsecondsSinceEpoch.toString() +
               '.' +
               ext;
-          imageRCBACK
-              ? null
-              : _rcbackloader == "1"
-                  ? null
-                  : Networkcallforuploadimage("RCBACK", rcbackimage);
-          //  uploadfile(compressedFile, rcbackfilename, context);
+          await Networkcallforuploadimage("RCBACK", rcbackimage);
+          _rcbackloader = "0"; // Reset loader
           setState(() {});
           break;
         case "VEHICLEFRONT":
           vehiclefrontimage = base64String;
           vehiclefronttachmentPath = filename;
-          _vehiclefrontloader = "2";
+          loaderVar = _vehiclefrontloader = "2";
           final ext = filename.split('.').last;
           vehiclefrontfilename = "VEHICLEFRONT_" +
               DateTime.now().microsecondsSinceEpoch.toString() +
               '.' +
               ext;
-          imageVEHICLEFRONT
-              ? null
-              : _vehiclefrontloader == "1"
-                  ? null
-                  : Networkcallforuploadimage(
-                      "VEHICLEFRONT", vehiclefrontimage);
-          //    uploadfile(compressedFile, vehiclefrontfilename, context);
+          await Networkcallforuploadimage("VEHICLEFRONT", vehiclefrontimage);
+          _vehiclefrontloader = "0"; // Reset loader
           setState(() {});
           break;
         case "VEHICLESIDE":
           vehiclesideimage = base64String;
           vehiclesidetachmentPath = filename;
-          _vehiclesideloader = "2";
+          loaderVar = _vehiclesideloader = "2";
           final ext = filename.split('.').last;
           vehiclesidefilename = "VEHICLESIDE_" +
               DateTime.now().microsecondsSinceEpoch.toString() +
               '.' +
               ext;
-          imageVEHICLESIDE
-              ? null
-              : _vehiclesideloader == "1"
-                  ? null
-                  : Networkcallforuploadimage("VEHICLESIDE", vehiclesideimage);
-          //  uploadfile(compressedFile, vehiclesidefilename, context);
+          await Networkcallforuploadimage("VEHICLESIDE", vehiclesideimage);
+          _vehiclesideloader = "0"; // Reset loader
           setState(() {});
           break;
         case "TAGAFFIX":
           tagfiximage = base64String;
           tagfixachmentPath = filename;
-          _taxfixloader = "2";
+          loaderVar = _taxfixloader = "2";
           final ext = filename.split('.').last;
           tagfixfilename = "TAGAFFIX_" +
               DateTime.now().microsecondsSinceEpoch.toString() +
               '.' +
               ext;
-          imageTAGAFFIX
-              ? null
-              : _taxfixloader == "1"
-                  ? null
-                  : Networkcallforuploadimage("TAGAFFIX", tagfiximage);
-          //  uploadfile(compressedFile, vehiclesidefilename, context);
+          await Networkcallforuploadimage("TAGAFFIX", tagfiximage);
+          _taxfixloader = "0"; // Reset loader
           setState(() {});
           break;
       }
     } catch (e) {
       print("Error uploading file: " + e.toString());
+      // Reset the loader in case of error
+      resetLoadersBasedOnFileType(filetype);
+      setState(() {});
     }
   }
 
@@ -1322,6 +1305,26 @@ class UploadImagesState extends State<UploadImages> {
                 widget.chasisnumber,
                 widget.serialnumber)),
       );
+    }
+  }
+
+  void resetLoadersBasedOnFileType(String filetype) {
+    switch (filetype) {
+      case "RCFRONT":
+        _rcfrontloader = "0";
+        break;
+      case "RCBACK":
+        _rcbackloader = "0";
+        break;
+      case "VEHICLEFRONT":
+        _vehiclefrontloader = "0";
+        break;
+      case "VEHICLESIDE":
+        _vehiclesideloader = "0";
+        break;
+      case "TAGAFFIX":
+        _taxfixloader = "0";
+        break;
     }
   }
 }
