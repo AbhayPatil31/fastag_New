@@ -20,7 +20,10 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+
     NotificationServices().requestNotificationPermission(context);
+    notificationServices.firebaseInit(context);
+    notificationServices.setInteractMessage(context);
     notificationServices.getDevicetoken().then((value) {
       print('Device Token ${value}');
       pushtoken = value;

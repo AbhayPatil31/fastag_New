@@ -41,46 +41,47 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD49_PPW84RnRkWpgA6T6zsEwC7t6wmt-w',
-    appId: '1:851197053748:web:7070a3c7c4c42fe26e3361',
-    messagingSenderId: '851197053748',
-    projectId: 'shaurya-pay',
-    authDomain: 'shaurya-pay.firebaseapp.com',
-    storageBucket: 'shaurya-pay.appspot.com',
+    apiKey: 'AIzaSyCxkdQCFYV2jHShuQ9C8bpzB8_3aUAKgWA',
+    appId: '1:315964127831:web:b85c0615d5e39f19cf8112',
+    messagingSenderId: '315964127831',
+    projectId: 'shaurya-pay-88647',
+    authDomain: 'shaurya-pay-88647.firebaseapp.com',
+    storageBucket: 'shaurya-pay-88647.appspot.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD3j8NYdrvHJnZC8Z5t7eq0vcctJuLdbYA',
-    appId: '1:851197053748:android:353c6db18c2387e76e3361',
-    messagingSenderId: '851197053748',
-    projectId: 'shaurya-pay',
-    storageBucket: 'shaurya-pay.appspot.com',
+    apiKey: 'AIzaSyCwjURZv7E8dxYkNJTt_hhQhyGuoTyrSEw',
+    appId: '1:315964127831:android:3ada144364428f38cf8112',
+    messagingSenderId: '315964127831',
+    projectId: 'shaurya-pay-88647',
+    storageBucket: 'shaurya-pay-88647.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAQvV-MJqMcUikm1iTTMDeq170YKeqcK3k',
-    appId: '1:851197053748:ios:54ce2308e7084cce6e3361',
-    messagingSenderId: '851197053748',
-    projectId: 'shaurya-pay',
-    storageBucket: 'shaurya-pay.appspot.com',
+    apiKey: 'AIzaSyAPCS3egl6k4h3zgnTZDbbTjiSZ1GzXin8',
+    appId: '1:315964127831:ios:975533e6302209bfcf8112',
+    messagingSenderId: '315964127831',
+    projectId: 'shaurya-pay-88647',
+    storageBucket: 'shaurya-pay-88647.appspot.com',
     iosBundleId: 'com.example.fastTag',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAQvV-MJqMcUikm1iTTMDeq170YKeqcK3k',
-    appId: '1:851197053748:ios:54ce2308e7084cce6e3361',
-    messagingSenderId: '851197053748',
-    projectId: 'shaurya-pay',
-    storageBucket: 'shaurya-pay.appspot.com',
+    apiKey: 'AIzaSyAPCS3egl6k4h3zgnTZDbbTjiSZ1GzXin8',
+    appId: '1:315964127831:ios:975533e6302209bfcf8112',
+    messagingSenderId: '315964127831',
+    projectId: 'shaurya-pay-88647',
+    storageBucket: 'shaurya-pay-88647.appspot.com',
     iosBundleId: 'com.example.fastTag',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyD49_PPW84RnRkWpgA6T6zsEwC7t6wmt-w',
-    appId: '1:851197053748:web:64f67f9be19c28566e3361',
-    messagingSenderId: '851197053748',
-    projectId: 'shaurya-pay',
-    authDomain: 'shaurya-pay.firebaseapp.com',
-    storageBucket: 'shaurya-pay.appspot.com',
+    apiKey: 'AIzaSyCxkdQCFYV2jHShuQ9C8bpzB8_3aUAKgWA',
+    appId: '1:315964127831:web:a488dff6260576edcf8112',
+    messagingSenderId: '315964127831',
+    projectId: 'shaurya-pay-88647',
+    authDomain: 'shaurya-pay-88647.firebaseapp.com',
+    storageBucket: 'shaurya-pay-88647.appspot.com',
   );
+
 }
