@@ -6,12 +6,18 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import "dart:developer" as lg;
 import 'package:rxdart/rxdart.dart';
 
-class NotificationServices {
-  String? callId;
-  FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+import 'pages/homeScreen.dart';
+import 'pages/notifiation.dart';
+import 'pages/report_inssurance.dart';
+import 'pages/tickets_details.dart';
+import 'pages/tickets_list.dart';
+import 'pages/wallet.dart';
 
+class NotificationServices {
+  FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin flutterlocalnotificationplugin =
       FlutterLocalNotificationsPlugin();
+
   static final onNotifications = BehaviorSubject<String?>();
 
   void requestNotificationPermission(BuildContext context) async {
@@ -33,13 +39,7 @@ class NotificationServices {
         print('User declined or has not accepted permission');
       }
     } catch (e) {
-      // PrintMessage.printmessage(
-      //     e.toString(),
-      //     'requestNotificationPermission',
-      //     'Notification Sercive',
-      //     context,
-      //     Colorfile().errormessagebcColor,
-      //     Colorfile().errormessagetxColor);
+      print('Error in requestNotificationPermission: $e');
     }
   }
 
@@ -49,66 +49,48 @@ class NotificationServices {
       var androidInitialization =
           const AndroidInitializationSettings('@mipmap/ic_launcher');
       var iosInitialization = const DarwinInitializationSettings();
-      var intializationSetting = InitializationSettings(
+      var initializationSetting = InitializationSettings(
           android: androidInitialization, iOS: iosInitialization);
 
-      //await flutterlocalnotificationplugin.initialize(intializationSetting);
-      await flutterlocalnotificationplugin.initialize(intializationSetting,
-          onDidReceiveNotificationResponse: (payload) {
-        handleRemoteMessage(context, message);
-      });
-
-      final details = await flutterlocalnotificationplugin
-          .getNotificationAppLaunchDetails();
-      if (details != null && details.didNotificationLaunchApp) {
-        handleRemoteMessage(context, message);
-      }
+      await flutterlocalnotificationplugin.initialize(
+        initializationSetting,
+        onDidReceiveNotificationResponse: (NotificationResponse response) {
+          handleRemoteMessage(context, message);
+        },
+      );
     } catch (e) {
-      // PrintMessage.printmessage(
-      //     e.toString(),
-      //     'initLocalNotifications',
-      //     'Notification Sercive',
-      //     context,
-      //     Colorfile().errormessagebcColor,
-      //     Colorfile().errormessagetxColor);
+      print('Error in initLocalNotifications: $e');
     }
   }
 
   void firebaseInit(BuildContext context) {
     try {
       FirebaseMessaging.onMessage.listen((message) {
-        //if (Platform.isAndroid) {
         initLocalNotifications(context, message);
         showNotification(message);
-        // } else {
-        //   showNotification(message);
-        // }
       });
     } catch (e) {
-      // PrintMessage.printmessage(
-      //     e.toString(),
-      //     'firebaseInit',
-      //     'Notification Services',
-      //     context,
-      //     Colorfile().errormessagebcColor,
-      //     Colorfile().errormessagetxColor);
+      print('Error in firebaseInit: $e');
     }
   }
 
   Future<void> showNotification(RemoteMessage message) async {
     AndroidNotificationChannel channel = AndroidNotificationChannel(
-        Random.secure().nextInt(100000).toString(), 'text_channel',
-        importance: Importance.high);
+      Random.secure().nextInt(100000).toString(),
+      'text_channel',
+      importance: Importance.high,
+    );
 
     AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
-            channel.id.toString(), channel.name.toString(),
-            channelDescription: 'Your channel Description',
-            importance: Importance.high,
-            priority: Priority.high,
-            playSound: true,
-            //  sound: RawResourceAndroidNotificationSound('res_custom_message'),
-            ticker: 'ticker');
+      channel.id.toString(),
+      channel.name.toString(),
+      channelDescription: 'Your channel Description',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+      ticker: 'ticker',
+    );
 
     DarwinNotificationDetails darwinNotificationDetails =
         const DarwinNotificationDetails(
@@ -117,108 +99,92 @@ class NotificationServices {
     NotificationDetails notificationDetails = NotificationDetails(
         android: androidNotificationDetails, iOS: darwinNotificationDetails);
 
-    Future.delayed(Duration.zero, () {
-      flutterlocalnotificationplugin.show(
-        1,
-        message.data['title'].toString(),
-        message.data['body'].toString(),
-        notificationDetails,
-      );
-    });
+    flutterlocalnotificationplugin.show(
+      1,
+      message.notification?.title ?? 'Title',
+      message.notification?.body ?? 'Body',
+      notificationDetails,
+    );
+  }
+
+  Future<void> setInteractMessage(BuildContext context) async {
+    try {
+      RemoteMessage? initialmessage =
+          await FirebaseMessaging.instance.getInitialMessage();
+      if (initialmessage != null) {
+        // This handles notification tap when app is opened from terminated state
+        handleRemoteMessage(context, initialmessage);
+      }
+
+      FirebaseMessaging.onMessageOpenedApp.listen((event) {
+        // This handles notification tap when app is in background or foreground
+        handleRemoteMessage(context, event);
+      });
+    } catch (e) {
+      print('Error in setInteractMessage: $e');
+    }
+  }
+
+  void handleRemoteMessage(BuildContext context, RemoteMessage message) async {
+    print('Handling remote message: ${message.messageId}');
+    print('Notification title: ${message.notification?.title}');
+    print('Notification body: ${message.notification?.body}');
+    print('Notification data: ${message.data}');
+
+    String pageLink = message.data['page_link']?.toString() ?? '';
+    String orderId =
+        message.data['order_id']?.toString() ?? ''; // Extract the order_id
+
+    switch (pageLink) {
+      case "WalletPage":
+        print('Navigating to Wallet Page');
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (context) => WalletPage()),
+        );
+        break;
+
+      case "ReportIssuancePage":
+        print('Navigating to Report Issuance Page');
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (context) => ReportIssuancePage()),
+        );
+        break;
+
+      case "raiseticketdetailpage":
+        if (orderId.isNotEmpty) {
+          print('Navigating to Ticket Details Page with ID: $orderId');
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+                builder: (context) => TicketDetailsPage(id: orderId)),
+          );
+        } else {
+          print('Order ID is missing, navigating to Tickets List Page');
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(builder: (context) => TicketsListPage()),
+          );
+        }
+        break;
+
+      case "NotificationPage":
+        print('Navigating to Notification Page');
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (context) => NotificationPage()),
+        );
+        break;
+
+      default:
+        print('Default route, navigating to home');
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+              builder: (context) =>
+                  MyDashboard()), // Replace MyDashboard with your home page widget
+        );
+        break;
+    }
   }
 
   Future<String> getDevicetoken() async {
     String? token = await firebaseMessaging.getToken();
     return token!;
-  }
-
-  void isTokenRefresh(BuildContext context) {
-    try {
-      firebaseMessaging.onTokenRefresh.listen((event) {
-        event.toString();
-      });
-    } catch (e) {
-      // PrintMessage.printmessage(
-      //     e.toString(),
-      //     'isTokenRefresh',
-      //     'Notification Sercive',
-      //     context,
-      //     Colorfile().errormessagebcColor,
-      //     Colorfile().errormessagetxColor);
-    }
-  }
-
-  Future<void> setInteractMessage(BuildContext context) async {
-    //when app is termitted
-    try {
-      RemoteMessage? initialmessage =
-          await FirebaseMessaging.instance.getInitialMessage();
-      if (initialmessage != null) {
-        handleRemoteMessage(context, initialmessage);
-      }
-      //when app is in background
-      FirebaseMessaging.onMessageOpenedApp.listen((event) {
-        handleRemoteMessage(context, event);
-      });
-    } catch (e) {
-      // PrintMessage.printmessage(
-      //     e.toString(),
-      //     'setInteractMessage',
-      //     'Notification Sercive',
-      //     context,
-      //     Colorfile().errormessagebcColor,
-      //     Colorfile().errormessagetxColor);
-    }
-  }
-
-  void handleRemoteMessage(BuildContext context, RemoteMessage message) async {
-    print('Handling remote message: ${message.notification?.title}');
-    final data = message.data;
-    String landingPage =
-        message.data['landing_page']?.toString().toLowerCase() ?? '';
-    lg.log(landingPage);
-    switch (landingPage) {
-      case "order_details":
-        print('Navigating to Order Details page');
-        // navigatorKey.currentState?.push(MaterialPageRoute(
-        //   builder: (context) => ViewOrder(
-        //     data['order_id'] ?? '',
-        //     data['route'] ?? '',
-        //     data['order_no'] ?? '',
-        //   ),
-        // ));
-        break;
-
-      // case "query_details":
-      //   print('Navigating to Help Detail page');
-      //   final ticketId = data['ticket_id'] ?? '';
-
-      //   if (ticketId.isNotEmpty) {
-      //     // Call the network function to fetch the latest data
-      //     // await NetworkcallforDard(context);
-
-      //     // Check if carddata is available
-      //     if (carddata.isNotEmpty) {
-      //       final UserQuery? query = getUserQueryById(ticketId);
-      //       if (query != null) {
-      //         navigatorKey.currentState?.push(MaterialPageRoute(
-      //           builder: (context) => helpDetail(carddata: query),
-      //         ));
-      //       } else {
-      //         print('No UserQuery found with the given ticket ID');
-      //       }
-      //     } else {
-      //       print(
-      //           'No card data available, cannot navigate to Help Detail page');
-      //     }
-      //   } else {
-      //     print('Ticket ID is missing');
-      //   }
-      //   break;
-
-      default:
-        print('Default route, navigating to home');
-        navigatorKey.currentState?.pushNamed('/');
-    }
   }
 }

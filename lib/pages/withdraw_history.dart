@@ -238,9 +238,7 @@ class _WithdrawHistoryPageState extends State<WithdrawHistoryPage> {
                     onTap: () {
                       // Handle button press
                     },
-                    child: Container(
-                     
-                        ),
+                    child: Container(),
                   ),
                 ),
               ],
