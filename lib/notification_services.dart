@@ -1,8 +1,9 @@
 import 'dart:math';
+import 'package:fast_tag/main.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
+import "dart:developer" as lg;
 import 'package:rxdart/rxdart.dart';
 
 class NotificationServices {
@@ -170,10 +171,54 @@ class NotificationServices {
     }
   }
 
-  void handleRemoteMessage(BuildContext context, RemoteMessage message) {
-    try {
-      String landingpage =
-          message.data['landing_page'].toString().toLowerCase();
-    } catch (e) {}
+  void handleRemoteMessage(BuildContext context, RemoteMessage message) async {
+    print('Handling remote message: ${message.notification?.title}');
+    final data = message.data;
+    String landingPage =
+        message.data['landing_page']?.toString().toLowerCase() ?? '';
+    lg.log(landingPage);
+    switch (landingPage) {
+      case "order_details":
+        print('Navigating to Order Details page');
+        // navigatorKey.currentState?.push(MaterialPageRoute(
+        //   builder: (context) => ViewOrder(
+        //     data['order_id'] ?? '',
+        //     data['route'] ?? '',
+        //     data['order_no'] ?? '',
+        //   ),
+        // ));
+        break;
+
+      // case "query_details":
+      //   print('Navigating to Help Detail page');
+      //   final ticketId = data['ticket_id'] ?? '';
+
+      //   if (ticketId.isNotEmpty) {
+      //     // Call the network function to fetch the latest data
+      //     // await NetworkcallforDard(context);
+
+      //     // Check if carddata is available
+      //     if (carddata.isNotEmpty) {
+      //       final UserQuery? query = getUserQueryById(ticketId);
+      //       if (query != null) {
+      //         navigatorKey.currentState?.push(MaterialPageRoute(
+      //           builder: (context) => helpDetail(carddata: query),
+      //         ));
+      //       } else {
+      //         print('No UserQuery found with the given ticket ID');
+      //       }
+      //     } else {
+      //       print(
+      //           'No card data available, cannot navigate to Help Detail page');
+      //     }
+      //   } else {
+      //     print('Ticket ID is missing');
+      //   }
+      //   break;
+
+      default:
+        print('Default route, navigating to home');
+        navigatorKey.currentState?.pushNamed('/');
+    }
   }
 }

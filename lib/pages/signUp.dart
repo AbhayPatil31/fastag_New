@@ -79,8 +79,8 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   void initState() {
     super.initState();
-    notificationServices.firebaseInit(context);
-    notificationServices.setInteractMessage(context);
+    // notificationServices.firebaseInit(context);
+    // notificationServices.setInteractMessage(context);
     notificationServices.getDevicetoken().then((value) {
       print('Device Token ${value}');
       pushtoken = value;

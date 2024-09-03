@@ -1,25 +1,35 @@
 import 'package:fast_tag/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'notification_services.dart';
+import 'pages/signUp.dart';
 import 'pages/splashScreen.dart'; // Corrected import path
+
+final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+
+  final notificationServices = NotificationServices();
 
   @override
   Widget build(BuildContext context) {
+    // Initialize notification services here, where `context` is available
+    notificationServices.firebaseInit(context);
+    notificationServices.setInteractMessage(context);
+
     return MaterialApp(
-      //title: 'Flutter Demo',
-      debugShowCheckedModeBanner:
-          false, // Set to false to hide the debug banner
+      navigatorKey: navigatorKey,
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
