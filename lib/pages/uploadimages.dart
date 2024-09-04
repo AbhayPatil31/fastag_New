@@ -284,7 +284,10 @@ class UploadImagesState extends State<UploadImages> {
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.camera_alt, size: 30, color: Colors.grey),
+                          Image(
+                            height: 40,
+                            image: AssetImage('images/car.png'),
+                          ),
                           SizedBox(height: 10),
                           Text(
                             'Tap to capture image',
@@ -419,7 +422,10 @@ class UploadImagesState extends State<UploadImages> {
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.camera_alt, size: 30, color: Colors.grey),
+                        Image(
+                          height: 40,
+                          image: AssetImage('images/car.png'),
+                        ),
                         SizedBox(height: 10),
                         Text(
                           'Tap to capture image',
@@ -539,7 +545,10 @@ class UploadImagesState extends State<UploadImages> {
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.camera_alt, size: 30, color: Colors.grey),
+                        Image(
+                          height: 40,
+                          image: AssetImage('images/car.png'),
+                        ),
                         SizedBox(height: 10),
                         Text(
                           'Tap to capture image',
@@ -661,7 +670,10 @@ class UploadImagesState extends State<UploadImages> {
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.camera_alt, size: 30, color: Colors.grey),
+                        Image(
+                          height: 40,
+                          image: AssetImage('images/car.png'),
+                        ),
                         SizedBox(height: 10),
                         Text(
                           'Tap to capture image',
@@ -783,7 +795,10 @@ class UploadImagesState extends State<UploadImages> {
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.camera_alt, size: 30, color: Colors.grey),
+                        Image(
+                          height: 40,
+                          image: AssetImage('images/car.png'),
+                        ),
                         SizedBox(height: 10),
                         Text(
                           'Tap to capture image',
