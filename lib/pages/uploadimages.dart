@@ -284,10 +284,7 @@ class UploadImagesState extends State<UploadImages> {
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Image(
-                            height: 40,
-                            image: AssetImage('images/car.png'),
-                          ),
+                          Icon(Icons.camera_alt, size: 30, color: Colors.grey),
                           SizedBox(height: 10),
                           Text(
                             'Tap to capture image',
@@ -422,10 +419,7 @@ class UploadImagesState extends State<UploadImages> {
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image(
-                          height: 40,
-                          image: AssetImage('images/car.png'),
-                        ),
+                        Icon(Icons.camera_alt, size: 30, color: Colors.grey),
                         SizedBox(height: 10),
                         Text(
                           'Tap to capture image',
@@ -547,7 +541,7 @@ class UploadImagesState extends State<UploadImages> {
                       children: [
                         Image(
                           height: 40,
-                          image: AssetImage('images/car.png'),
+                          image: AssetImage('images/Carfront.png'),
                         ),
                         SizedBox(height: 10),
                         Text(
@@ -618,6 +612,7 @@ class UploadImagesState extends State<UploadImages> {
     );
   }
 
+//dont change image this is also done
   Widget uploadsideimage() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -672,7 +667,7 @@ class UploadImagesState extends State<UploadImages> {
                       children: [
                         Image(
                           height: 40,
-                          image: AssetImage('images/car.png'),
+                          image: AssetImage('images/Carside.png'),
                         ),
                         SizedBox(height: 10),
                         Text(
@@ -743,6 +738,7 @@ class UploadImagesState extends State<UploadImages> {
     );
   }
 
+//dont change this image,it is valid.
   Widget uploadtagfiximage() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
