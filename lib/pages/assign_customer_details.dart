@@ -113,13 +113,14 @@ class CustomerDetailsPageState extends State<CustomerDetailsPage> {
       selectedvalue = "Pan Card";
       idselectedValue = "1";
     } else if (doctype == "2") {
-      selectedvalue = "Passport";
+      selectedvalue = "Driving Licence";
+
       idselectedValue = "2";
     } else if (doctype == "3") {
-      selectedvalue = "Driving Licence";
+      selectedvalue = "Voter Id";
       idselectedValue = "3";
     } else if (doctype == "4") {
-      selectedvalue = "Voter Id";
+      selectedvalue = "Passport";
       idselectedValue = "4";
     }
     setState(() {});
@@ -128,9 +129,9 @@ class CustomerDetailsPageState extends State<CustomerDetailsPage> {
   setvalue() {
     idprooflist.clear();
     idprooflist.add('Pan Card');
-    idprooflist.add('Passport');
     idprooflist.add('Driving Licence');
     idprooflist.add('Voter Id');
+    idprooflist.add('Passport');
 
     setState(() {});
   }
@@ -248,7 +249,7 @@ class CustomerDetailsPageState extends State<CustomerDetailsPage> {
                     const SizedBox(
                       height: 15,
                     ),
-                    idselectedValue == "2" || idselectedValue == "3"
+                    idselectedValue == "2" || idselectedValue == "4"
                         ? expwidget()
                         : Container(),
                     // const SizedBox(
@@ -528,11 +529,11 @@ class CustomerDetailsPageState extends State<CustomerDetailsPage> {
                 });
                 if (selectedvalue == "Pan Card") {
                   idselectedValue = "1";
-                } else if (selectedvalue == "Passport") {
-                  idselectedValue = "2";
                 } else if (selectedvalue == "Driving Licence") {
-                  idselectedValue = "3";
+                  idselectedValue = "2";
                 } else if (selectedvalue == "Voter Id") {
+                  idselectedValue = "3";
+                } else if (selectedvalue == "Passport") {
                   idselectedValue = "4";
                 }
                 _idnumbercontroller.clear();
@@ -607,7 +608,7 @@ class CustomerDetailsPageState extends State<CustomerDetailsPage> {
   }
 
   Widget expwidget() {
-    return idselectedValue == "2" || idselectedValue == "3"
+    return idselectedValue == "2" || idselectedValue == "4"
         ? Container(
             margin: EdgeInsets.only(bottom: 20),
             decoration: BoxDecoration(
@@ -640,8 +641,10 @@ class CustomerDetailsPageState extends State<CustomerDetailsPage> {
                 ),
                 fillColor: Theme.of(context).scaffoldBackgroundColor,
                 filled: true,
-                contentPadding:
-                    EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 15,
+                  horizontal: 20,
+                ),
                 suffixIcon: GestureDetector(
                   onTap: () async {
                     validateexpirydate = true;
@@ -899,7 +902,7 @@ class CustomerDetailsPageState extends State<CustomerDetailsPage> {
       validateidnumber = false;
       validateplan = false;
       setState(() {});
-    } else if ((idselectedValue == "2" || idselectedValue == "3") &&
+    } else if ((idselectedValue == "2" || idselectedValue == "4") &&
         _expdatecontroller.text.isEmpty) {
       validateexpirydate = false;
       setState(() {});
