@@ -478,17 +478,24 @@ class PaymentOptionState extends State<PaymentOption> {
       String accessCode =
           widget.cc_access_code; // Access code provided by CCAvenue
 
-      String ccAvenueUrl =
-          'https://secure.ccavenue.com/transaction.do?command=initiateTransaction&encRequest=$encRequest&access_code=$accessCode';
-
+      // Initiate the payment by calling the native method via MethodChannel
       final String result = await _channel.invokeMethod('startPayment', {
         'encRequest': encRequest,
         'accessCode': accessCode,
       });
-      print(result);
+
+      // Handle the result of the payment
+      print('Payment Result: $result');
+      setState(() {
+        // Update UI based on the result (for example, showing success dialog)
+        handlePaymentSuccessResponseCcAvenue(result);
+      });
     } catch (e) {
       print('CCAvenue Payment Error: $e');
-      handlePaymentErrorResponseCcAvenue(e.toString());
+      setState(() {
+        // Update UI on failure (for example, showing failure dialog)
+        handlePaymentErrorResponseCcAvenue(e.toString());
+      });
     }
   }
 
@@ -507,7 +514,6 @@ class PaymentOptionState extends State<PaymentOption> {
 
 // Handling CCAvenue payment failure
   void handlePaymentErrorResponseCcAvenue(String? message) {
-    // Implement similar to Razorpay error handling logic
     Networkcallforupdatepaymentstatus(
       '', // Payment ID would be empty in case of error
       widget.amount,
