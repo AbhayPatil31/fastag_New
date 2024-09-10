@@ -71,6 +71,7 @@ dependencies:
   percent_indicator: ^4.2.3
   animated_text_kit: ^4.2.2 
   cc_avenue: ^1.0.3
+  encrypt: ^5.0.3
 
 dev_dependencies:
   flutter_test:

@@ -87,6 +87,7 @@ class RechargePageState extends State<RechargePage> {
   }
 
   String keyid = "", secretekey = "";
+  String cc_merchant_id = "", cc_access_code = "", cc_working_key = "";
   List<GetrazorpaydetailsapiresponseData> datalist = [];
 
   Future<void> Networkcallforgetvehicleclass() async {
@@ -103,6 +104,9 @@ class RechargePageState extends State<RechargePage> {
             GetrazorpaydetailsapiresponseData obj = response[0]!.data!;
             keyid = obj.razorPayKey!;
             secretekey = obj.razorPaySecret!;
+            cc_merchant_id = obj.ccMerchantId!;
+            cc_access_code = obj.ccAccessCode!;
+            cc_working_key = obj.ccWorkingKey!;
             setState(() {});
             break;
           case "false":
@@ -210,7 +214,7 @@ class RechargePageState extends State<RechargePage> {
                     Navigator.push(context, MaterialPageRoute(
                       builder: (context) {
                         return PaymentOption(
-                            _amountcontroller.text, keyid, secretekey);
+                            _amountcontroller.text, keyid, secretekey,cc_merchant_id,cc_access_code,cc_working_key);
                       },
                     )).then(
                       (value) {

@@ -25,14 +25,47 @@ import '../utility/snackbardesign.dart';
 import 'CCAvenueWebViewPage.dart';
 import 'upigetwayservices.dart';
 import 'package:http/http.dart' as http;
+import "package:flutter/services.dart";
+import 'package:encrypt/encrypt.dart' as encrypt;
+import 'dart:convert';
+
+Future<String> encryptData(String data, String key) async {
+  final keyBytes = encrypt.Key.fromBase64(key);
+  final iv = encrypt.IV
+      .fromLength(16); // CCAvenue might specify a specific IV length or method
+
+  final encrypter = encrypt.Encrypter(encrypt.AES(keyBytes));
+  final encrypted = encrypter.encrypt(data, iv: iv);
+
+  return encrypted.base64;
+}
+
+Future<String> getEncryptedValue(Map<String, String> params) async {
+  // Convert parameters to a string suitable for encryption
+  String dataToEncrypt =
+      params.entries.map((e) => '${e.key}=${e.value}').join('&');
+  print('Data to Encrypt: $dataToEncrypt');
+
+  // Encrypt the data
+  String encryptedData = await encryptData(
+      dataToEncrypt, 'YourEncryptionKey'); // Replace with the actual key
+  return encryptedData;
+}
 
 bool allowrazorpay = false, allowupi = false, allowccavenue = false;
 String message =
     "Payment gateway have some technical issues please wait for some time or you can contact from the administrator";
 
 class PaymentOption extends StatefulWidget {
-  String amount, keyid, secretekey;
-  PaymentOption(this.amount, this.keyid, this.secretekey);
+  String amount,
+      keyid,
+      secreteke,
+      cc_merchant_id,
+      cc_access_code,
+      cc_working_key;
+
+  PaymentOption(this.amount, this.keyid, this.secreteke, this.cc_merchant_id,
+      this.cc_access_code, this.cc_working_key);
   @override
   State<PaymentOption> createState() => PaymentOptionState();
 }
@@ -427,23 +460,27 @@ class PaymentOptionState extends State<PaymentOption> {
   Future<void> rechargeByCcAvenue() async {
     try {
       var params = {
-        'merchant_id': 'YourMerchantID',
-        'order_id': '${AppUtility.AgentId}_${Random().nextInt(100)}',
+        'merchant_id': widget.cc_merchant_id,
+        'order_id':
+            '${widget.keyid}_${Random().nextInt(100)}', // Unique order ID
         'currency': 'INR',
-        'amount': (double.parse(widget.amount) * 100).toString(),
-        'redirect_url': 'http://your_redirect_url_here.com',
-        'cancel_url': 'http://your_cancel_url_here.com',
+        'amount': (double.parse(widget.amount) * 100)
+            .toString(), // Amount in smallest currency unit
+        'redirect_url':
+            'http://your_redirect_url_here.com', // Actual redirect URL
+        'cancel_url': 'http://your_cancel_url_here.com', // Actual cancel URL
       };
       print('Parameters: $params');
 
       var encRequest = await getEncryptedValue(params);
       print('Encrypted Request: $encRequest');
 
-      String accessCode = 'YourAccessCode'; // Provided by CCAvenue
+      String accessCode =
+          widget.cc_access_code; // Access code provided by CCAvenue
+
       String ccAvenueUrl =
           'https://secure.ccavenue.com/transaction.do?command=initiateTransaction&encRequest=$encRequest&access_code=$accessCode';
 
-      // Call the native method to start payment
       final String result = await _channel.invokeMethod('startPayment', {
         'encRequest': encRequest,
         'accessCode': accessCode,
@@ -453,6 +490,19 @@ class PaymentOptionState extends State<PaymentOption> {
       print('CCAvenue Payment Error: $e');
       handlePaymentErrorResponseCcAvenue(e.toString());
     }
+  }
+
+// Ensure your encryption method is correct
+  Future<String> getEncryptedValue(Map<String, String> params) async {
+    // Convert parameters to a string suitable for encryption
+    String dataToEncrypt =
+        params.entries.map((e) => '${e.key}=${e.value}').join('&');
+    print('Data to Encrypt: $dataToEncrypt');
+
+    // Encrypt the data using the working key
+    String encryptedData =
+        await encryptData(dataToEncrypt, widget.cc_working_key);
+    return encryptedData;
   }
 
 // Handling CCAvenue payment failure
@@ -545,7 +595,7 @@ class PaymentOptionState extends State<PaymentOption> {
 //have to do work here today.
   void handlePaymentSuccessResponse(PaymentSuccessResponse response) {
     print(response.data);
-    final key = utf8.encode(widget.secretekey);
+    final key = utf8.encode(widget.secreteke);
     final bytes = utf8.encode('${response.orderId}|${response.paymentId}');
     final hmacSha256 = Hmac(sha256, key);
     final generatedSignature = hmacSha256.convert(bytes);
@@ -583,15 +633,48 @@ class PaymentOptionState extends State<PaymentOption> {
     );
   }
 
-  Future<String> getEncryptedValue(Map<String, String> requestParams) async {
-    final response = await http.post(
-      Uri.parse('https://your-server.com/ccAvenueRequestHandler.php'),
-      body: requestParams,
-    );
-    if (response.statusCode == 200) {
-      return response.body; // Encrypted value
-    } else {
-      throw Exception('Failed to load encrypted data');
+  Future<String> encryptData(String data, String hexKey) async {
+    try {
+      // Convert hexadecimal key to bytes
+      final keyBytes = hexToBytes(hexKey);
+
+      // Create key object from bytes
+      final key = encrypt.Key(keyBytes);
+
+      // Create an Initialization Vector (IV)
+      final iv = encrypt.IV.fromLength(
+          16); // Ensure this is the correct length or method for CCAvenue
+
+      // Initialize Encrypter with AES algorithm
+      final encrypter = encrypt.Encrypter(encrypt.AES(key));
+
+      // Encrypt data
+      final encrypted = encrypter.encrypt(data, iv: iv);
+
+      // Return encrypted data as base64
+      return encrypted.base64;
+    } catch (e) {
+      print('Encryption Error: $e');
+      throw e;
     }
   }
+
+  Uint8List hexToBytes(String hex) {
+    final buffer = Uint8List(hex.length ~/ 2);
+    for (var i = 0; i < buffer.length; i++) {
+      buffer[i] = int.parse(hex.substring(i * 2, i * 2 + 2), radix: 16);
+    }
+    return buffer;
+  }
+  // Future<String> getEncryptedValue(Map<String, String> requestParams) async {
+  //   final response = await http.post(
+  //     Uri.parse('https://test.ccavenue.com/'),
+  //     body: requestParams,
+  //   );
+  //   if (response.statusCode == 200) {
+  //     return response.body; // Encrypted value
+  //   } else {
+  //     throw Exception('Failed to load encrypted data');
+  //   }
+  // }
 }

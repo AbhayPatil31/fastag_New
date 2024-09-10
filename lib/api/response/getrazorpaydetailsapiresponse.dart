@@ -43,10 +43,18 @@ class Getrazorpaydetailsapiresponse {
 class GetrazorpaydetailsapiresponseData {
   String? razorPayKey;
   String? razorPaySecret;
+  String? upiKey;
+  String? ccMerchantId;
+  String? ccAccessCode;
+  String? ccWorkingKey;
 
   GetrazorpaydetailsapiresponseData({
     this.razorPayKey,
     this.razorPaySecret,
+    this.upiKey,
+    this.ccMerchantId,
+    this.ccAccessCode,
+    this.ccWorkingKey,
   });
 
   factory GetrazorpaydetailsapiresponseData.fromJson(
@@ -54,10 +62,18 @@ class GetrazorpaydetailsapiresponseData {
       GetrazorpaydetailsapiresponseData(
         razorPayKey: json["razor_pay_key"],
         razorPaySecret: json["razor_pay_secret"],
+        upiKey: json["upi_key"],
+        ccMerchantId: json["cc_merchant_id"],
+        ccAccessCode: json["cc_access_code"],
+        ccWorkingKey: json["cc_working_key"],
       );
 
   Map<String, dynamic> toJson() => {
         "razor_pay_key": razorPayKey,
         "razor_pay_secret": razorPaySecret,
+        "upi_key": upiKey,
+        "cc_merchant_id": ccMerchantId,
+        "cc_access_code": ccAccessCode,
+        "cc_working_key": ccWorkingKey,
       };
 }
