@@ -18,17 +18,21 @@ class Getpaymentoptionresponse {
   String? upiGatewayStatus;
   String? upi_gateway_message;
   String? razzor_gateway_message;
+  String? ccavenue_gateway_message;
+  String? ccavenue_gateway_status;
+
   List<dynamic>? data;
 
-  Getpaymentoptionresponse({
-    this.status,
-    this.message,
-    this.razzorGatewayStatus,
-    this.upiGatewayStatus,
-    this.razzor_gateway_message,
-    this.upi_gateway_message,
-    this.data,
-  });
+  Getpaymentoptionresponse(
+      {this.status,
+      this.message,
+      this.razzorGatewayStatus,
+      this.upiGatewayStatus,
+      this.razzor_gateway_message,
+      this.upi_gateway_message,
+      this.data,
+      this.ccavenue_gateway_message,
+      this.ccavenue_gateway_status});
 
   factory Getpaymentoptionresponse.fromJson(Map<String, dynamic> json) =>
       Getpaymentoptionresponse(
@@ -41,6 +45,8 @@ class Getpaymentoptionresponse {
         data: json["data"] == null
             ? []
             : List<dynamic>.from(json["data"]!.map((x) => x)),
+        ccavenue_gateway_message: json["ccavenue_gateway_message"],
+        ccavenue_gateway_status: json["ccavenue_gateway_status"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -51,5 +57,7 @@ class Getpaymentoptionresponse {
         "razzor_gateway_message": razzor_gateway_message,
         "upi_gateway_message": upi_gateway_message,
         "data": data == null ? [] : List<dynamic>.from(data!.map((x) => x)),
+        "ccavenue_gateway_message": ccavenue_gateway_message,
+        "ccavenue_gateway_status": ccavenue_gateway_status,
       };
 }

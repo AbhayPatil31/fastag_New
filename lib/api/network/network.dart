@@ -61,9 +61,9 @@ import '../response/getrazorpaydetailsapiresponse.dart';
 class NetworkCall {
   Future<List<Object?>?> postMethod(
       int requestCode, String url, String body, BuildContext context) async {
-    log("Request Code : $requestCode");
-    log("body : $body");
-    log("URL : $url");
+    // log("Request Code : $requestCode");
+    // log("body : $body");
+    // log("URL : $url");
     var response = await http.post(Uri.parse(url), body: body);
     // var data = response.body;
     try {
@@ -71,7 +71,7 @@ class NetworkCall {
         String ResponseString = response.body;
 
         String str = "[" + ResponseString + "]";
-        log("Response : $str");
+        log("***** URL : $url + body : $body + Response : $str *****");
 
         switch (requestCode) {
           case 1:
@@ -253,6 +253,8 @@ class NetworkCall {
         String ResponseString = response.body;
 
         String str = "[" + ResponseString + "]";
+        log("***** URL : $url + Response : $str *****");
+
         // log("Response : $str");
         switch (requestCode) {
           case 3:

@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:cc_avenue/cc_avenue.dart';
 import 'package:crypto/crypto.dart';
 import 'package:fast_tag/api/response/getpaymentoptionresponse.dart';
 import 'package:fast_tag/pages/paymentscreen.dart';
 import 'package:fast_tag/utility/colorfile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,9 +22,11 @@ import '../api/network/uri.dart';
 import '../api/response/paymentresponse.dart';
 import '../utility/apputility.dart';
 import '../utility/snackbardesign.dart';
+import 'CCAvenueWebViewPage.dart';
 import 'upigetwayservices.dart';
+import 'package:http/http.dart' as http;
 
-bool allowrazorpay = false, allowupi = false;
+bool allowrazorpay = false, allowupi = false, allowccavenue = false;
 String message =
     "Payment gateway have some technical issues please wait for some time or you can contact from the administrator";
 
@@ -62,7 +66,12 @@ class PaymentOptionState extends State<PaymentOption> {
               allowupi = false;
               message = response[0].upi_gateway_message!;
             }
-
+            if (response[0].ccavenue_gateway_status == "1") {
+              allowccavenue = true;
+            } else {
+              allowccavenue = false;
+              message = response[0].ccavenue_gateway_message!;
+            }
             setState(() {});
             break;
           case "false":
@@ -226,140 +235,167 @@ class PaymentOptionState extends State<PaymentOption> {
                   Text(
                     'Secure Payment Gateway',
                     style: TextStyle(
-                        color: Color(0xffd4aa1e),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700),
+                      color: Color(0xffd4aa1e),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   Text(
-                    'Experience unparalleled security with our Payment Gateway. ',
+                    'Experience unparalleled security with our Payment Gateway.',
                     style: TextStyle(
-                        color: colorfile().buttoncolor,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500),
+                      color: colorfile().buttoncolor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
                     textAlign: TextAlign.center,
                   ).marginOnly(top: 10, bottom: 10),
-                  Row(
-                    children: [
-                      allowrazorpay
-                          ? Expanded(
-                              child: ElevatedButton(
-                              onPressed: () {
-                                rechargenow();
-                              },
-                              style: ButtonStyle(
-                                shape: MaterialStateProperty.all<
-                                    RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        5.0), // Button corner radius 5px
-                                  ),
-                                ),
-                                padding: MaterialStateProperty.all<EdgeInsets>(
-                                    EdgeInsets.zero),
+                  if (allowrazorpay) // Razorpay button
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          rechargenow();
+                        },
+                        style: ButtonStyle(
+                          shape:
+                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                          ),
+                          padding: MaterialStateProperty.all<EdgeInsets>(
+                              EdgeInsets.zero),
+                        ),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xFF08469D),
+                                Color(0xFF0056D0),
+                                Color(0xFF0C92DD),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                          child: Container(
+                            height: 60,
+                            alignment: Alignment.center,
+                            child: Text(
+                              'Pay via Razorpay',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.0,
                               ),
-                              child: Ink(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Color(0xFF08469D),
-                                      Color(0xFF0056D0),
-                                      Color(0xFF0C92DD),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(5.0),
-                                ),
-                                child: Container(
-                                  height: 60,
-                                  width: double
-                                      .infinity, // Make button width match its parent
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    'Pay via Razorpay',
-                                    style: TextStyle(
-                                      color: Colors
-                                          .white, // Set text color to white for better contrast
-                                      fontSize: 18.0,
-                                    ),
-                                  ),
-                                ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (allowccavenue)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // startCCAvenuePayment();
+                          rechargeByCcAvenue();
+                        },
+                        style: ButtonStyle(
+                          shape:
+                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                          ),
+                          padding: MaterialStateProperty.all<EdgeInsets>(
+                              EdgeInsets.zero),
+                        ),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xFF08469D),
+                                Color(0xFF0056D0),
+                                Color(0xFF0C92DD),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                          child: Container(
+                            height: 60,
+                            alignment: Alignment.center,
+                            child: Text(
+                              'Pay via CC Avenue',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.0,
                               ),
-                            ))
-                          : Container(),
-                      allowrazorpay
-                          ? SizedBox(
-                              width: 10,
-                            )
-                          : Container(),
-                      allowupi
-                          ? Expanded(
-                              child: ElevatedButton(
-                              onPressed: () async {
-                                var paymentData =
-                                    await _upiService.initiatePayment(
-                                        'Satish Mungase',
-                                        'satish@shauryasoftrack.com',
-                                        '8329265068',
-                                        double.parse(widget.amount));
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (allowupi) // UPI button
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          var paymentData = await _upiService.initiatePayment(
+                              'Satish Mungase',
+                              'satish@shauryasoftrack.com',
+                              '8329265068',
+                              double.parse(widget.amount));
 
-                                var paymentUrl = paymentData.data!.paymentUrl!;
+                          var paymentUrl = paymentData.data!.paymentUrl!;
 
-                                Navigator.push(context, MaterialPageRoute(
-                                  builder: (context) {
-                                    return Paymentscreen(
-                                        paymentUrl, widget.amount);
-                                  },
-                                )).then(
-                                  (value) {
-                                    Navigator.pop(context);
-                                  },
-                                );
-                              },
-                              style: ButtonStyle(
-                                shape: MaterialStateProperty.all<
-                                    RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        5.0), // Button corner radius 5px
-                                  ),
-                                ),
-                                padding: MaterialStateProperty.all<EdgeInsets>(
-                                    EdgeInsets.zero),
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (context) {
+                              return Paymentscreen(paymentUrl, widget.amount);
+                            },
+                          )).then((value) {
+                            Navigator.pop(context);
+                          });
+                        },
+                        style: ButtonStyle(
+                          shape:
+                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                          ),
+                          padding: MaterialStateProperty.all<EdgeInsets>(
+                              EdgeInsets.zero),
+                        ),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xFF08469D),
+                                Color(0xFF0056D0),
+                                Color(0xFF0C92DD),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                          child: Container(
+                            height: 60,
+                            alignment: Alignment.center,
+                            child: Text(
+                              'Pay via UPI Gateway',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.0,
                               ),
-                              child: Ink(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Color(0xFF08469D),
-                                      Color(0xFF0056D0),
-                                      Color(0xFF0C92DD),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(5.0),
-                                ),
-                                child: Container(
-                                  height: 60,
-                                  width: double
-                                      .infinity, // Make button width match its parent
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    'Pay via UPI Getway',
-                                    style: TextStyle(
-                                      color: Colors
-                                          .white, // Set text color to white for better contrast
-                                      fontSize: 18.0,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ))
-                          : Container(),
-                    ],
-                  ),
-                  //  Text("Result \n $result"),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
       ),
@@ -383,6 +419,66 @@ class PaymentOptionState extends State<PaymentOption> {
     razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
     razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWalletSelected);
     razorpay.open(options);
+  }
+
+  static const MethodChannel _channel =
+      MethodChannel('com.example.fast_tag/payment');
+
+  Future<void> rechargeByCcAvenue() async {
+    try {
+      var params = {
+        'merchant_id': 'YourMerchantID',
+        'order_id': '${AppUtility.AgentId}_${Random().nextInt(100)}',
+        'currency': 'INR',
+        'amount': (double.parse(widget.amount) * 100).toString(),
+        'redirect_url': 'http://your_redirect_url_here.com',
+        'cancel_url': 'http://your_cancel_url_here.com',
+      };
+      print('Parameters: $params');
+
+      var encRequest = await getEncryptedValue(params);
+      print('Encrypted Request: $encRequest');
+
+      String accessCode = 'YourAccessCode'; // Provided by CCAvenue
+      String ccAvenueUrl =
+          'https://secure.ccavenue.com/transaction.do?command=initiateTransaction&encRequest=$encRequest&access_code=$accessCode';
+
+      // Call the native method to start payment
+      final String result = await _channel.invokeMethod('startPayment', {
+        'encRequest': encRequest,
+        'accessCode': accessCode,
+      });
+      print(result);
+    } catch (e) {
+      print('CCAvenue Payment Error: $e');
+      handlePaymentErrorResponseCcAvenue(e.toString());
+    }
+  }
+
+// Handling CCAvenue payment failure
+  void handlePaymentErrorResponseCcAvenue(String? message) {
+    // Implement similar to Razorpay error handling logic
+    Networkcallforupdatepaymentstatus(
+      '', // Payment ID would be empty in case of error
+      widget.amount,
+      "2",
+      message ?? "Unknown Error",
+      "1",
+      "0",
+    );
+    showAlertDialog(context, "Payment Failed", message ?? "Unknown Error");
+  }
+
+// Handling CCAvenue payment success
+  void handlePaymentSuccessResponseCcAvenue(String paymentId) {
+    Networkcallforupdatepaymentstatus(
+      paymentId,
+      widget.amount,
+      "2",
+      "Payment Successful",
+      "1",
+      "1",
+    );
   }
 
   Future<void> Networkcallforupdatepaymentstatus(
@@ -446,6 +542,7 @@ class PaymentOptionState extends State<PaymentOption> {
         "Code: ${response.code}\nDescription: ${response.message}");
   }
 
+//have to do work here today.
   void handlePaymentSuccessResponse(PaymentSuccessResponse response) {
     print(response.data);
     final key = utf8.encode(widget.secretekey);
@@ -484,5 +581,17 @@ class PaymentOptionState extends State<PaymentOption> {
         return alert;
       },
     );
+  }
+
+  Future<String> getEncryptedValue(Map<String, String> requestParams) async {
+    final response = await http.post(
+      Uri.parse('https://your-server.com/ccAvenueRequestHandler.php'),
+      body: requestParams,
+    );
+    if (response.statusCode == 200) {
+      return response.body; // Encrypted value
+    } else {
+      throw Exception('Failed to load encrypted data');
+    }
   }
 }
