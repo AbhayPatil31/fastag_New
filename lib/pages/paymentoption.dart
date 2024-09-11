@@ -19,8 +19,10 @@ import 'package:url_launcher/url_launcher.dart';
 import '../api/network/create_json.dart';
 import '../api/network/network.dart';
 import '../api/network/uri.dart';
+import '../api/response/CCAvenueResponse.dart';
 import '../api/response/paymentresponse.dart';
 import '../utility/apputility.dart';
+import '../utility/progressdialog.dart';
 import '../utility/snackbardesign.dart';
 import 'CCAvenueWebViewPage.dart';
 import 'upigetwayservices.dart';
@@ -56,6 +58,7 @@ Future<String> getEncryptedValue(Map<String, String> params) async {
 bool allowrazorpay = false, allowupi = false, allowccavenue = false;
 String message =
     "Payment gateway have some technical issues please wait for some time or you can contact from the administrator";
+String ccavenueurl = "";
 
 class PaymentOption extends StatefulWidget {
   String amount,
@@ -79,8 +82,9 @@ class PaymentOptionState extends State<PaymentOption> {
   @override
   void initState() {
     super.initState();
-    getRsaPublicKey();
+    // getRsaPublicKey();
     Networkcallforgetpaymentoption();
+    // Networkcallforapiinitiateccavenueforwalletrecharge();
     // Initialize AppLinks to listen for deep links
     _appLinks = AppLinks();
     _appLinks.uriLinkStream.listen((Uri? uri) {
@@ -380,7 +384,7 @@ class PaymentOptionState extends State<PaymentOption> {
                       child: ElevatedButton(
                         onPressed: () {
                           // startCCAvenuePayment();
-                          rechargeByCcAvenue();
+                          rechargeByCcAvenue(context);
                         },
                         style: ButtonStyle(
                           shape:
@@ -505,36 +509,19 @@ class PaymentOptionState extends State<PaymentOption> {
   static const MethodChannel _channel =
       MethodChannel('com.example.fast_tag/payment');
 
-  Future<void> rechargeByCcAvenue() async {
+  Future<void> rechargeByCcAvenue(BuildContext context) async {
     try {
-      // Payment parameters
-      var params = {
-        'merchant_id': widget.cc_merchant_id,
-        'order_id': '${DateTime.now().millisecondsSinceEpoch}',
-        'currency': 'INR',
-        'amount': double.parse(widget.amount).toStringAsFixed(2),
-        'redirect_url': 'https://staginglink.org/citylink/vendor-login',
-        'cancel_url': 'https://staginglink.org/citylink/vendor-login',
-      };
+      Networkcallforplaceorderwithccavenue();
+      // String url = "https://shauryapay.com/testing/check_status";
 
-      // Encrypt the data
-      String encryptedValue =
-          await getEncryptedValue(params, widget.cc_working_key);
-      String accessCode = widget.cc_access_code;
-
-      // Construct deep link URL (CC Avenue Transaction URL)
-      final initiateUrl =
-          'https://secure.ccavenue.com//transaction.do?command=initiateTransaction&'
-          '?encRequest=$encryptedValue'
-          '&accessCode=$accessCode'
-          '&merchant_id=${widget.cc_merchant_id}';
-
-      // Open the URL using a deep link (can be handled by a browser or external intent)
-      if (await canLaunch(initiateUrl)) {
-        await launch(initiateUrl); // Deep linking to open CCAvenue page
-      } else {
-        throw 'Could not launch $initiateUrl';
-      }
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CCAvenueWebViewPage(
+            initiateUrl: ccavenueurl,
+          ),
+        ),
+      );
     } catch (e) {
       handlePaymentErrorResponseCcAvenue(e.toString());
     }
@@ -748,5 +735,58 @@ class PaymentOptionState extends State<PaymentOption> {
 
     // Return the base64 encoded encrypted string
     return encrypted.base64;
+  }
+
+  Future<void> Networkcallforplaceorderwithccavenue() async {
+    try {
+      ProgressDialog.showProgressDialog(context, "Loading...");
+      String creatjson = createjson().initapiforgeturlcallFromJson(
+          AppUtility.AgentId, widget.amount, context);
+      List<Object?>? list = await NetworkCall().postMethod(
+          URLS().api_initiate_cc_avenue_for_wallet_rechargeapi,
+          URLS().api_initiate_cc_avenue_for_wallet_rechargeurl,
+          creatjson,
+          context);
+      if (list != null) {
+        Navigator.pop(context);
+        List<Ccavenueapiresponse> response = List.from(list!);
+        String status = response[0].status!;
+        switch (status) {
+          case "true":
+            ccavenueurl = response[0].initiateUrl!;
+
+            MaterialPageRoute(
+              builder: (context) => CCAvenueWebViewPage(
+                initiateUrl: response[0].initiateUrl!,
+              ),
+            );
+
+            break;
+
+          case "false":
+            SnackBarDesign(
+                'Unable to pay emi!', context, Colors.red, Colors.white);
+            break;
+        }
+      } else {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      // PrintMessage.printmessage(e.toString(), 'Networkcallforplaceorderwithemi',
+      // 'Check Out EMI', context);
+    }
+    // }
+
+    // if (result != null) {
+    //   // Handle the response from the WebView
+    //   final status = result['status'];
+    //   final message = result['message'];
+    //   final data = result['data'];
+
+    //   print('##########Status: $status############');
+    //   print('Message: $message');
+    //   print('Data: $data');
+
+    // Process the result as needed
   }
 }

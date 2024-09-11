@@ -67,9 +67,11 @@ class URLS {
   String get_state_code_url = baseUrl + "get_state_code";
   String get_vehicleDescriptor_url = baseUrl + "get_vehicleDescriptor";
   String file_send_in_dir = baseUrl + "file_send_in_dir";
-  String get_complete_customer_details_by_vehicle_url =
-      baseUrl + "get_complete_customer_details_by_vehicle";
-
+  String get_complete_customer_details_by_vehicle_url = baseUrl +
+      "get_complete_customer_details_by_vehicle"; //api_initiate_cc_avenue_for_wallet_recharge
+  String api_initiate_cc_avenue_for_wallet_rechargeurl =
+      baseUrl + "api_initiate_cc_avenue_for_wallet_recharge";
+  String check_statusurl = baseUrl + "check_status";
   final int agent_login_api = 1;
   final int profile_details_api = 2;
   final int help_type_master_api = 3;
@@ -122,6 +124,9 @@ class URLS {
   final int get_state_code = 50;
   final int get_vehicleDescriptor = 51;
   final int get_complete_customer_details_by_vehicle = 52;
+  final int check_statusapi = 53; //api_initiate_cc_avenue_for_wallet_recharge
+  final int api_initiate_cc_avenue_for_wallet_rechargeapi = 54;
+
   //get list
 }
  // static String baseUrl = "https://staginglink.org/shourya-fastag/"; //For live

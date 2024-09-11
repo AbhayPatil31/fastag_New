@@ -42,6 +42,7 @@ import '../call/Ticketlistjson.dart';
 import '../call/Ticketraisejson.dart';
 import '../call/categorydetailscall.dart';
 import '../call/categorydetailscall.dart' as categorycall;
+import '../call/initapiforgeturlcall.dart';
 import '../call/validateotpcall.dart';
 import 'package:path/path.dart' as path;
 
@@ -688,6 +689,22 @@ class createjson {
           Customervehicledetailscall(vehicleNumber: vehicle_number);
       var result =
           Customervehicledetailscall.fromJson(uploadimagescall.toJson());
+      String str = encoder.convert(result);
+      return str;
+    } catch (e) {
+      print(e.toString());
+      return "";
+    }
+  }
+
+  String initapiforgeturlcallFromJson(String agentId, String amount, BuildContext context) {
+
+       try {
+      JsonEncoder encoder = JsonEncoder.withIndent('');
+      initapiforgeturlcall loginjsonCreation =
+          initapiforgeturlcall(agentId: agentId, amount: amount);
+      var result =
+          initapiforgeturlcall.fromJson(loginjsonCreation.toJson());
       String str = encoder.convert(result);
       return str;
     } catch (e) {

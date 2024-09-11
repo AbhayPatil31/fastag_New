@@ -50,6 +50,7 @@ import 'package:fast_tag/api/response/wallettotalamountresponse.dart';
 import 'package:fast_tag/api/response/wallettransactionhistoryresponse.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../response/CCAvenueResponse.dart';
 import '../response/Helpresponse.dart';
 import '../response/Loginresponse.dart';
 import '../response/TicketdetailsListresponse.dart';
@@ -144,7 +145,7 @@ class NetworkCall {
           case 23:
             final customerdetails = addcustomerdetailsresponseFromJson(str);
             return customerdetails;
-            break;
+
           case 24:
             final setvehicledetails =
                 setvehicledetailsmanuallyresponseFromJson(str);
@@ -222,6 +223,10 @@ class NetworkCall {
           case 52:
             // log(str);
             final customerdetail = customervehicledetailsresponeFromJson(str);
+            return customerdetail; //ccavenueapiresponseFromJson
+          case 54:
+            // log(str);
+            final customerdetail = ccavenueapiresponseFromJson(str);
             return customerdetail;
         }
       } else if (response.statusCode == 400) {

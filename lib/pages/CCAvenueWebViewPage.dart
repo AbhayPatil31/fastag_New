@@ -1,19 +1,13 @@
-import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:html/parser.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'dart:developer';
 
-import '../api/network/network.dart';
-import '../api/response/CCAvenueResponse.dart';
-import 'ThankYouPageforCCAvenuePayment.dart';
+import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class CCAvenueWebViewPage extends StatefulWidget {
   final String initiateUrl;
-  final String orderId;
 
   CCAvenueWebViewPage({
     required this.initiateUrl,
-    required this.orderId,
   });
 
   @override
@@ -27,16 +21,27 @@ class _CCAvenueWebViewPageState extends State<CCAvenueWebViewPage> {
   void initState() {
     super.initState();
 
-    // Initialize WebViewController with necessary configurations
+    // Initialize WebViewController
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
+          onPageFinished: (String url) async {
+            // Inject JavaScript to handle a simple message response
+            await _controller.runJavaScript("""
+              window.addEventListener('message', function(event) {
+                if (event.origin === 'https://shauryapay.com') {
+                  // Send the response data to Flutter via JavaScriptChannel
+                  window.flutterMessage.postMessage(event.data);
+                }
+              });
+
+              // For demonstration, post a simple message when the page loads
+              window.postMessage('success', '*');
+            """);
+          },
           onPageStarted: (String url) {
             print('Page started loading: $url');
-          },
-          onPageFinished: (String url) {
-            print('Page finished loading: $url');
           },
           onWebResourceError: (WebResourceError error) {
             print('Web resource error: ${error.description}');
@@ -44,6 +49,17 @@ class _CCAvenueWebViewPageState extends State<CCAvenueWebViewPage> {
                 context, "Error", "Failed to load page: ${error.description}");
           },
         ),
+      )
+      ..addJavaScriptChannel(
+        'flutterMessage',
+        onMessageReceived: (JavaScriptMessage message) {
+          // Directly handle the simple message
+          final String messageContent = message.message;
+          print('Message received: $messageContent');
+
+          // Use the received message as needed
+          handleWebViewResponse(messageContent);
+        },
       )
       ..loadRequest(Uri.parse(widget.initiateUrl));
   }
@@ -54,8 +70,7 @@ class _CCAvenueWebViewPageState extends State<CCAvenueWebViewPage> {
       appBar: AppBar(
         title: const Text("CC Avenue Payment"),
       ),
-      body: WebViewWidget(
-          controller: _controller), // Use WebViewWidget with controller
+      body: WebViewWidget(controller: _controller),
     );
   }
 
@@ -78,5 +93,20 @@ class _CCAvenueWebViewPageState extends State<CCAvenueWebViewPage> {
         return alert;
       },
     );
+  }
+
+  String? handleWebViewResponse(String message) {
+    // Handle the WebView response
+    print("Handling WebView Response: $message");
+
+    // Example action based on message
+    if (message == 'success') {
+      log("****Payment Successful***");
+      return message;
+    } else {
+      log("Unexpected message received: $message");
+      return message;
+    }
+    return message;
   }
 }
