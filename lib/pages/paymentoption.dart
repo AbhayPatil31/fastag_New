@@ -28,6 +28,7 @@ import 'package:http/http.dart' as http;
 import "package:flutter/services.dart";
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'dart:convert';
+import 'package:app_links/app_links.dart';
 
 Future<String> encryptData(String data, String key) async {
   final keyBytes = encrypt.Key.fromBase64(key);
@@ -72,10 +73,45 @@ class PaymentOption extends StatefulWidget {
 
 class PaymentOptionState extends State<PaymentOption> {
   final UpiGatewayService _upiService = UpiGatewayService();
+  final String returnUrl =
+      "yourapp://paymentresponse"; // Define your custom scheme URL
+  late AppLinks _appLinks;
   @override
   void initState() {
     super.initState();
+    getRsaPublicKey();
     Networkcallforgetpaymentoption();
+    // Initialize AppLinks to listen for deep links
+    _appLinks = AppLinks();
+    _appLinks.uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        _handleDeepLink(uri);
+      }
+    });
+
+    AppLinks().uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        // Handle the deep link when the app is already running
+        _handleDeepLink(uri);
+      }
+    });
+  }
+
+  void _handleDeepLink(Uri uri) {
+    if (uri.host == "paymentresponse") {
+      if (uri.pathSegments.contains('success')) {
+        // Payment successful
+        final paymentId = uri.queryParameters['payment_id'];
+        if (paymentId != null) {
+          handlePaymentSuccessResponseCcAvenue(paymentId);
+        } else {
+          handlePaymentErrorResponseCcAvenue("Invalid payment response");
+        }
+      } else if (uri.pathSegments.contains('cancel')) {
+        // Payment canceled
+        handlePaymentErrorResponseCcAvenue("Payment cancelled by user");
+      }
+    }
   }
 
   Future<void> Networkcallforgetpaymentoption() async {
@@ -120,6 +156,18 @@ class PaymentOptionState extends State<PaymentOption> {
       }
     } catch (e) {
       print(e.toString());
+    }
+  }
+
+  Future<String> getRsaPublicKey() async {
+    final response = await http
+        .get(Uri.parse('https://test.ccavenue.com/transaction/getRSAKey'));
+
+    if (response.statusCode == 200) {
+      // Assuming the response contains the public key in plain text
+      return response.body; // This should be the RSA public key
+    } else {
+      throw Exception('Failed to load RSA public key');
     }
   }
 
@@ -459,82 +507,81 @@ class PaymentOptionState extends State<PaymentOption> {
 
   Future<void> rechargeByCcAvenue() async {
     try {
+      // Payment parameters
       var params = {
         'merchant_id': widget.cc_merchant_id,
-        'order_id':
-            '${widget.keyid}_${Random().nextInt(100)}', // Unique order ID
+        'order_id': '${DateTime.now().millisecondsSinceEpoch}',
         'currency': 'INR',
-        'amount': (double.parse(widget.amount) * 100)
-            .toString(), // Amount in smallest currency unit
-        'redirect_url':
-            'http://your_redirect_url_here.com', // Actual redirect URL
-        'cancel_url': 'http://your_cancel_url_here.com', // Actual cancel URL
+        'amount': double.parse(widget.amount).toStringAsFixed(2),
+        'redirect_url': 'https://staginglink.org/citylink/vendor-login',
+        'cancel_url': 'https://staginglink.org/citylink/vendor-login',
       };
-      print('Parameters: $params');
 
-      var encRequest = await getEncryptedValue(params);
-      print('Encrypted Request: $encRequest');
+      // Encrypt the data
+      String encryptedValue =
+          await getEncryptedValue(params, widget.cc_working_key);
+      String accessCode = widget.cc_access_code;
 
-      String accessCode =
-          widget.cc_access_code; // Access code provided by CCAvenue
+      // Construct deep link URL (CC Avenue Transaction URL)
+      final initiateUrl =
+          'https://secure.ccavenue.com//transaction.do?command=initiateTransaction&'
+          '?encRequest=$encryptedValue'
+          '&accessCode=$accessCode'
+          '&merchant_id=${widget.cc_merchant_id}';
 
-      // Initiate the payment by calling the native method via MethodChannel
-      final String result = await _channel.invokeMethod('startPayment', {
-        'encRequest': encRequest,
-        'accessCode': accessCode,
-      });
-
-      // Handle the result of the payment
-      print('Payment Result: $result');
-      setState(() {
-        // Update UI based on the result (for example, showing success dialog)
-        handlePaymentSuccessResponseCcAvenue(result);
-      });
+      // Open the URL using a deep link (can be handled by a browser or external intent)
+      if (await canLaunch(initiateUrl)) {
+        await launch(initiateUrl); // Deep linking to open CCAvenue page
+      } else {
+        throw 'Could not launch $initiateUrl';
+      }
     } catch (e) {
-      print('CCAvenue Payment Error: $e');
-      setState(() {
-        // Update UI on failure (for example, showing failure dialog)
-        handlePaymentErrorResponseCcAvenue(e.toString());
-      });
+      handlePaymentErrorResponseCcAvenue(e.toString());
     }
   }
 
 // Ensure your encryption method is correct
-  Future<String> getEncryptedValue(Map<String, String> params) async {
-    // Convert parameters to a string suitable for encryption
-    String dataToEncrypt =
-        params.entries.map((e) => '${e.key}=${e.value}').join('&');
-    print('Data to Encrypt: $dataToEncrypt');
+  // Future<String> getEncryptedValue(
+  //     Map<String, String> params, String workingKey) async {
+  //   // Convert params to a URL-encoded string format
+  //   String dataToEncrypt =
+  //       params.entries.map((e) => '${e.key}=${e.value}').join('&');
+  //   print('Data to Encrypt: $dataToEncrypt');
 
-    // Encrypt the data using the working key
-    String encryptedData =
-        await encryptData(dataToEncrypt, widget.cc_working_key);
-    return encryptedData;
+  //   // Use the Working Key provided by CCAvenue
+  //   final key = encrypt.Key.fromUtf8(workingKey); // Ensure 16 bytes key
+  //   final iv =
+  //       encrypt.IV.fromLength(16); // Initialization Vector (empty for CBC mode)
+  //   final encrypter =
+  //       encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+
+  //   // Encrypt the data
+  //   final encrypted = encrypter.encrypt(dataToEncrypt, iv: iv);
+
+  //   // Return the base64 encoded encrypted string
+  //   return encrypted.base64;
+  // }
+
+  Future<void> launchBrowser(String url) async {
+    // You can use url_launcher or another package to open a browser
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
 // Handling CCAvenue payment failure
   void handlePaymentErrorResponseCcAvenue(String? message) {
-    Networkcallforupdatepaymentstatus(
-      '', // Payment ID would be empty in case of error
-      widget.amount,
-      "2",
-      message ?? "Unknown Error",
-      "1",
-      "0",
-    );
+    // Your error handling logic here
+    print("Payment Failed: $message");
     showAlertDialog(context, "Payment Failed", message ?? "Unknown Error");
   }
 
 // Handling CCAvenue payment success
   void handlePaymentSuccessResponseCcAvenue(String paymentId) {
-    Networkcallforupdatepaymentstatus(
-      paymentId,
-      widget.amount,
-      "2",
-      "Payment Successful",
-      "1",
-      "1",
-    );
+    // Your success handling logic here
+    print("Payment Successful with ID: $paymentId");
   }
 
   Future<void> Networkcallforupdatepaymentstatus(
@@ -619,22 +666,30 @@ class PaymentOptionState extends State<PaymentOption> {
         context, "External Wallet Selected", "${response.walletName}");
   }
 
-  void showAlertDialog(BuildContext context, String title, String message) {
-    // set up the buttons
-    Widget continueButton = ElevatedButton(
-      child: const Text("Continue"),
-      onPressed: () {},
-    );
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text(title),
-      content: Text(message),
-    );
-    // show the dialog
-    showDialog(
+  Future<void> showAlertDialog(
+      BuildContext context, String title, String content) {
+    return showDialog<void>(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
-        return alert;
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(content),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
       },
     );
   }
@@ -672,15 +727,26 @@ class PaymentOptionState extends State<PaymentOption> {
     }
     return buffer;
   }
-  // Future<String> getEncryptedValue(Map<String, String> requestParams) async {
-  //   final response = await http.post(
-  //     Uri.parse('https://test.ccavenue.com/'),
-  //     body: requestParams,
-  //   );
-  //   if (response.statusCode == 200) {
-  //     return response.body; // Encrypted value
-  //   } else {
-  //     throw Exception('Failed to load encrypted data');
-  //   }
-  // }
+
+  Future<String> getEncryptedValue(
+      Map<String, String> params, String workingKey) async {
+    // Convert params to a URL-encoded string format
+    String dataToEncrypt =
+        params.entries.map((e) => '${e.key}=${e.value}').join('&');
+    print('Data to Encrypt: $dataToEncrypt');
+
+    // Ensure your working key is exactly 16 bytes
+    final key = encrypt.Key.fromUtf8(workingKey);
+    final iv = encrypt.IV.fromLength(16); // AES IV (16-byte)
+
+    // Create AES Encrypter with CBC mode
+    final encrypter =
+        encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+
+    // Encrypt the data
+    final encrypted = encrypter.encrypt(dataToEncrypt, iv: iv);
+
+    // Return the base64 encoded encrypted string
+    return encrypted.base64;
+  }
 }

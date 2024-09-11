@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -10,19 +9,11 @@ import 'ThankYouPageforCCAvenuePayment.dart';
 
 class CCAvenueWebViewPage extends StatefulWidget {
   final String initiateUrl;
-  // final String merchantId;
-  // final String accessCode;
-  // final String workingKey;
   final String orderId;
-  // final String amount;
-    CCAvenueWebViewPage({
+
+  CCAvenueWebViewPage({
     required this.initiateUrl,
-    // required this.merchantId,
-    // required this.accessCode,
-    // required this.workingKey,
     required this.orderId,
-    // required this.amount, 
-    // required String url,
   });
 
   @override
@@ -30,13 +21,30 @@ class CCAvenueWebViewPage extends StatefulWidget {
 }
 
 class _CCAvenueWebViewPageState extends State<CCAvenueWebViewPage> {
-  late WebViewController _controller;
+  late final WebViewController _controller;
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize WebViewController with necessary configurations
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) {
+            print('Page started loading: $url');
+          },
+          onPageFinished: (String url) {
+            print('Page finished loading: $url');
+          },
+          onWebResourceError: (WebResourceError error) {
+            print('Web resource error: ${error.description}');
+            showAlertDialog(
+                context, "Error", "Failed to load page: ${error.description}");
+          },
+        ),
+      )
       ..loadRequest(Uri.parse(widget.initiateUrl));
   }
 
@@ -46,54 +54,9 @@ class _CCAvenueWebViewPageState extends State<CCAvenueWebViewPage> {
       appBar: AppBar(
         title: const Text("CC Avenue Payment"),
       ),
-      body: WebViewWidget(controller: _controller),
+      body: WebViewWidget(
+          controller: _controller), // Use WebViewWidget with controller
     );
-  }
-
-  void _handleCCResponse(String htmlContent) {
-    // Parse the HTML response
-    final parsedHtml = parse(htmlContent);
-    final jsonData = parsedHtml.body?.text ?? '';
-    var result = ccavenueapiresponseFromJson(jsonData);
-
-    String orderStatus = result[0].message ?? "Failed";
-    String trackingId = result[0].status ?? "";
-    String initiateUrl = result[0].initiateUrl ?? "";
-
-    if (orderStatus == "Success") {
-      // Payment successful, call the API to update status
-      _updateCCPaymentStatus(orderStatus, trackingId, initiateUrl);
-    } else {
-      // Payment failed
-      showAlertDialog(context, "Payment Failed", "Transaction failed.");
-    }
-  }
-
-  Future<void> _updateCCPaymentStatus(
-      String status, String trackingId, String bankRefNo) async {
-    String jsonPayload = json.encode({
-      "orderId": widget.orderId,
-      "trackingId": trackingId,
-      "bankRefNo": bankRefNo,
-      "orderStatus": status,
-      "paymentStatus": "1"
-    });
-
-    List<Object?>? response = await NetworkCall().postMethod(
-      1,
-      'https://your-api-url.com/update-payment-status', // Use actual URL
-      jsonPayload,
-      context,
-    );
-
-    if (response != null && response.isNotEmpty && response[0] == "true") {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ThankYouPage()),
-      );
-    } else {
-      showAlertDialog(context, "Payment Failed", "Unable to process payment.");
-    }
   }
 
   void showAlertDialog(BuildContext context, String title, String message) {
