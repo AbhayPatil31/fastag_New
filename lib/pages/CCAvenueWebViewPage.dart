@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'ThankYouPageforCCAvenuePayment.dart';
+
 class CCAvenueWebViewPage extends StatefulWidget {
   final String initiateUrl;
 
@@ -95,13 +97,20 @@ class _CCAvenueWebViewPageState extends State<CCAvenueWebViewPage> {
     );
   }
 
-  String? handleWebViewResponse(String message) {
+  Future<String?> handleWebViewResponse(String message) async {
     // Handle the WebView response
     print("Handling WebView Response: $message");
 
     // Example action based on message
-    if (message == 'success') {
+    if (message.toLowerCase().toString() == 'success') {
       log("****Payment Successful***");
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              ThankYouPage(orderId: "1212", trackingId: "222121"),
+        ),
+      );
       return message;
     } else {
       log("Unexpected message received: $message");
