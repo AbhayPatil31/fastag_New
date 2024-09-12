@@ -42,7 +42,7 @@ class ThankYouPage extends StatelessWidget {
               SizedBox(height: 30),
               _buildOrderDetails(trackingId!),
               Spacer(),
-              _buildTrackOrderButton(context),
+              // _buildTrackOrderButton(context),
               _buildBackToHomeButton(context),
             ],
           ),
@@ -83,14 +83,14 @@ class ThankYouPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTrackOrderButton(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        // Navigate to track order page
-      },
-      child: Text('Track Order'),
-    );
-  }
+  // Widget _buildTrackOrderButton(BuildContext context) {
+  //   return ElevatedButton(
+  //     onPressed: () {
+  //       // Navigate to track order page
+  //     },
+  //     child: Text('Track Order'),
+  //   );
+  // }
 
   Widget _buildBackToHomeButton(BuildContext context) {
     return ElevatedButton(
@@ -195,33 +195,33 @@ Widget _buildDetailRow(String label, String value) {
   );
 }
 
-Widget _buildTrackOrderButton(BuildContext context) {
-  return ElevatedButton(
-    onPressed: () {
-      // Navigate to tracking page (if available)
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) => OrderTrackingPage(orderId: orderId), // Example page
-      //   ),
-      // );
-    },
-    style: ElevatedButton.styleFrom(
-      padding: EdgeInsets.symmetric(vertical: 15),
-      backgroundColor: Colors.green, // Button color
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-    ),
-    child: Text(
-      "Track My Order",
-      style: TextStyle(
-        fontSize: 18,
-        color: Colors.white,
-      ),
-    ),
-  );
-}
+// Widget _buildTrackOrderButton(BuildContext context) {
+//   return ElevatedButton(
+//     onPressed: () {
+//       // Navigate to tracking page (if available)
+//       // Navigator.push(
+//       //   context,
+//       //   MaterialPageRoute(
+//       //     builder: (context) => OrderTrackingPage(orderId: orderId), // Example page
+//       //   ),
+//       // );
+//     },
+//     style: ElevatedButton.styleFrom(
+//       padding: EdgeInsets.symmetric(vertical: 15),
+//       backgroundColor: Colors.green, // Button color
+//       shape: RoundedRectangleBorder(
+//         borderRadius: BorderRadius.circular(8),
+//       ),
+//     ),
+//     child: Text(
+//       "Track My Order",
+//       style: TextStyle(
+//         fontSize: 18,
+//         color: Colors.white,
+//       ),
+//     ),
+//   );
+// }
 
 Widget _buildBackToHomeButton(BuildContext context) {
   return TextButton(
