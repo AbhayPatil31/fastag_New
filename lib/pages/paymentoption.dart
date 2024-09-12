@@ -511,9 +511,8 @@ class PaymentOptionState extends State<PaymentOption> {
 
   Future<void> rechargeByCcAvenue(BuildContext context) async {
     try {
-      Networkcallforplaceorderwithccavenue();
-      // String url = "https://shauryapay.com/testing/check_status";
-
+      await Networkcallforplaceorderwithccavenue();
+      
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -548,15 +547,6 @@ class PaymentOptionState extends State<PaymentOption> {
   //   // Return the base64 encoded encrypted string
   //   return encrypted.base64;
   // }
-
-  Future<void> launchBrowser(String url) async {
-    // You can use url_launcher or another package to open a browser
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
 
 // Handling CCAvenue payment failure
   void handlePaymentErrorResponseCcAvenue(String? message) {
@@ -754,12 +744,12 @@ class PaymentOptionState extends State<PaymentOption> {
         switch (status) {
           case "true":
             ccavenueurl = response[0].initiateUrl!;
-
-            MaterialPageRoute(
-              builder: (context) => CCAvenueWebViewPage(
-                initiateUrl: response[0].initiateUrl!,
-              ),
-            );
+            setState(() {});
+            // MaterialPageRoute(
+            //   builder: (context) => CCAvenueWebViewPage(
+            //     initiateUrl: response[0].initiateUrl!,
+            //   ),
+            // );
 
             break;
 
