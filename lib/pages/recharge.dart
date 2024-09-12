@@ -156,9 +156,21 @@ class RechargePageState extends State<RechargePage> {
 
             // You may add additional logic to navigate to another specific page, if required
           } else {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => MyDashboard(),
+              ),
+              // (Route<dynamic> route) => false,
+            );
             // Prevent app from closing for other cases
             return false;
           }
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => MyDashboard(),
+            ),
+            // (Route<dynamic> route) => false,
+          );
           return true;
         },
         child: Scaffold(
