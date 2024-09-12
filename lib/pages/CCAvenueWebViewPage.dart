@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'PaymentFailurePage.dart';
 import 'ThankYouPageforCCAvenuePayment.dart';
 
 class CCAvenueWebViewPage extends StatefulWidget {
@@ -29,24 +31,19 @@ class _CCAvenueWebViewPageState extends State<CCAvenueWebViewPage> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (String url) async {
-            // Inject JavaScript to handle a simple message response
+            // Inject JavaScript to capture message on the page after it loads
             await _controller.runJavaScript("""
-              window.addEventListener('message', function(event) {
-                if (event.origin === 'https://shauryapay.com') {
-                  // Send the response data to Flutter via JavaScriptChannel
-                  window.flutterMessage.postMessage(event.data);
-                }
-              });
-
-              // For demonstration, post a simple message when the page loads
-              window.postMessage('success', '*');
+            // Assuming the message is in the body or a specific element
+            var message = document.body.innerText || '';  // Modify this to target the right element
+            // Send the message back to Flutter
+            window.flutterMessage.postMessage(message);
             """);
           },
           onPageStarted: (String url) {
-            print('Page started loading: $url');
+            log('#####Page started loading####: $url');
           },
           onWebResourceError: (WebResourceError error) {
-            print('Web resource error: ${error.description}');
+            log('###Web resource error###: ${error.description}');
             showAlertDialog(
                 context, "Error", "Failed to load page: ${error.description}");
           },
@@ -55,7 +52,7 @@ class _CCAvenueWebViewPageState extends State<CCAvenueWebViewPage> {
       ..addJavaScriptChannel(
         'flutterMessage',
         onMessageReceived: (JavaScriptMessage message) {
-          // Directly handle the simple message
+          // Handle the message received from the webview
           final String messageContent = message.message;
           print('Message received: $messageContent');
 
@@ -97,25 +94,44 @@ class _CCAvenueWebViewPageState extends State<CCAvenueWebViewPage> {
     );
   }
 
-  Future<String?> handleWebViewResponse(String message) async {
-    // Handle the WebView response
-    print("Handling WebView Response: $message");
+  Future<void> handleWebViewResponse(String message) async {
+    try {
+      // Check for string format like "Failure@@@113458220733" or "Success@@@113458220733"
+      final parts = message.split('@@@');
+      if (parts.length == 2) {
+        final status = parts[0].toLowerCase().trim();
+        final transactionId = parts[1].trim();
 
-    // Example action based on message
-    if (message.toLowerCase().toString() == 'success') {
-      log("****Payment Successful***");
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              ThankYouPage(orderId: "1212", trackingId: "222121"),
-        ),
-      );
-      return message;
-    } else {
-      log("Unexpected message received: $message");
-      return message;
+        if (status == 'success') {
+          log("****Payment Successful*** Transaction ID: $transactionId");
+          await Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ThankYouPage(
+                orderId: transactionId,
+                trackingId: transactionId,
+              ), //FailedPaymentPage
+            ),
+          );
+        } else if (status == 'failure') {
+          log("****Payment Failed*** Transaction ID: $transactionId");
+          await Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FailedPaymentPage(
+                transactionId: transactionId,
+              ), //FailedPaymentPage
+            ),
+          );
+        } else {
+          log("Unknown status received: $status");
+        }
+      } else {
+        log("Invalid message format received: $message");
+      }
+    } catch (e) {
+      // If message parsing fails, log the error
+      log("Failed to parse message: $e");
     }
-    return message;
   }
 }

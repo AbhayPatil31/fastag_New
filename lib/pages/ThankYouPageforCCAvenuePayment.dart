@@ -40,7 +40,7 @@ class ThankYouPage extends StatelessWidget {
               SizedBox(height: 15),
               _buildSuccessMessage(),
               SizedBox(height: 30),
-              _buildOrderDetails(orderId!, trackingId!),
+              _buildOrderDetails(trackingId!),
               Spacer(),
               _buildTrackOrderButton(context),
               _buildBackToHomeButton(context),
@@ -74,10 +74,10 @@ class ThankYouPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderDetails(String orderId, String trackingId) {
+  Widget _buildOrderDetails(String trackingId) {
     return Column(
       children: [
-        Text('Order ID: $orderId'),
+        // Text('Order ID: $orderId'),
         Text('Tracking ID: $trackingId'),
       ],
     );
@@ -163,7 +163,7 @@ Widget _buildOrderDetails(String orderId, String trackingId) {
         SizedBox(height: 10),
         _buildDetailRow("Order ID:", orderId),
         SizedBox(height: 5),
-        _buildDetailRow("Tracking ID:", trackingId),
+        // _buildDetailRow("Tracking ID:", trackingId),
         SizedBox(height: 5),
         _buildDetailRow("Status:", "Activated & Confirmed"),
       ],

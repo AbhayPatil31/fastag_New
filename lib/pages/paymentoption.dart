@@ -512,7 +512,7 @@ class PaymentOptionState extends State<PaymentOption> {
   Future<void> rechargeByCcAvenue(BuildContext context) async {
     try {
       await Networkcallforplaceorderwithccavenue();
-      
+
       await Navigator.push(
         context,
         MaterialPageRoute(
