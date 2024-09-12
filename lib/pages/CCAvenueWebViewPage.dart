@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'PaymentFailurePage.dart';
@@ -67,7 +68,14 @@ class _CCAvenueWebViewPageState extends State<CCAvenueWebViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("CC Avenue Payment"),
+        title: Text(
+          "CC Avenue Payment",
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1D2024),
+            fontSize: 18,
+          ),
+        ),
       ),
       body: WebViewWidget(controller: _controller),
     );

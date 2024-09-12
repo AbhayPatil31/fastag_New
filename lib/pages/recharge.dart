@@ -22,6 +22,7 @@ import '../api/response/paymentresponse.dart';
 import '../api/response/wallettotalamountresponse.dart';
 import '../utility/colorfile.dart';
 import '../utility/snackbardesign.dart';
+import 'PaymentFailurePage.dart';
 import 'homeScreen.dart';
 import 'wallet.dart';
 
@@ -141,7 +142,7 @@ class RechargePageState extends State<RechargePage> {
             // Pop and go back to the previous screen for wallet case
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => MyDashboard(),
+                builder: (context) => WalletPage(),
               ),
               // (Route<dynamic> route) => false,
             );
@@ -149,7 +150,7 @@ class RechargePageState extends State<RechargePage> {
             // Pop and return to the previous screen for failure page case
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => MyDashboard(),
+                builder: (context) => FailedPaymentPage(),
               ),
               // (Route<dynamic> route) => false,
             );
