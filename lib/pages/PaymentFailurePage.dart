@@ -112,7 +112,7 @@ class FailedPaymentPage extends StatelessWidget {
                     // Handle retry payment logic here
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
-                        builder: (context) => RechargePage("wallet"),
+                        builder: (context) => RechargePage("failurepage"),
                       ),
                       (Route<dynamic> route) => false,
                     );
